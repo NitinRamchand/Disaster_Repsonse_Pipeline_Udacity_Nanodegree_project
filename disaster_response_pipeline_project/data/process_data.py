@@ -1,5 +1,9 @@
 import sys
+import pandas
 
+def probando(hola):
+    if hola == 'hola':
+        print ('buenaz tardez')
 
 def load_data(messages_filepath, categories_filepath):
     pass
