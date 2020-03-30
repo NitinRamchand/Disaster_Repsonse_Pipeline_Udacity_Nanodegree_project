@@ -3,6 +3,11 @@ from sklearn.model_selection import train_test_split
 from sqlalchemy import create_engine
 from nltk.tokenize import word_tokenize
 from sklearn.pipeline import Pipeline
+from sklearn.multioutput import MultiOutputClassifier
+from nltk.corpus import stopwords
+from nltk.stem import WordNetLemmatizer
+import re
+
 
 def load_data(database_filepath):
     # This function loads the database.db into a dataframe   
@@ -13,10 +18,23 @@ def load_data(database_filepath):
 
 
 def tokenize(text):
-    #This function tokenizes the text by words
+    #This function tokenizes and lemmitizes the text by words, in addition to 
+    # removing stopwords and special characters
     tokenized_text_list = word_tokenize(text, language='english')
 
-
+    # Next we remove stopwords of this normalized and tokenized words.
+    text_tokenized_no_stop_words = [w for w in tokenized_text_list
+                                    if w not in stopwords.words('english')]
+    
+    # Next we use Lemmitization to get this text ready for feature extraction 
+    lemmed_text = [WordNetLemmatizer().lemmatize(w).lower().strip() 
+                   for w in text_tokenized_no_stop_words]
+    
+    # We remove all special characters that are not letters in the alphabet or numbers
+    cleaned_tokens = list(filter(lambda x:x, map(lambda x:re.sub(r'[^a-zA-Z0-9]', '', x), lemmed_text)))
+    
+    return cleaned_tokens
+    
 def build_model():
     pass
 
