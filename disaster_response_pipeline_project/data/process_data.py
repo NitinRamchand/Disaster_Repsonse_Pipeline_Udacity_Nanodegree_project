@@ -62,7 +62,7 @@ def clean_data(df):
 def save_data(df, database_filename):
     # This function loads the dataframe into a SQLlite Database 
     
-    engine = create_engine('sqlite:///DisasterReponse_Nitinproject_Udacity.db')
+    engine = create_engine('sqlite:///DisasterReponse.db')
     df.to_sql('DisasterResponse', engine, index=False)  
 
 
