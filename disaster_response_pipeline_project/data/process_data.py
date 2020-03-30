@@ -1,7 +1,6 @@
 import sys
 import pandas as pd
-import numpy as np
-from unittest.mock import inplace
+from sqlalchemy import create_engine
 
 def load_data(messages_filepath, categories_filepath):
     # This functions loads the messages and the categories datasets which are in csv format 
@@ -51,17 +50,20 @@ def clean_data(df):
     # Now we merge df with the categories dataframe
     df = df.merge(categories, how='outer', on='id')
     
-    #We deal with duplicated rows
-    print ('nº of duplciated items before deleting duplicates are', df.duplicated().sum())
+    #We deal with duplicated rows and we delete them
+    print ('number of duplicated items before deleting duplicates are', df.duplicated().sum())
     print('shape of dataframe is', df.shape)
     df.drop_duplicates(inplace=True)
-    print ('nº of duplciated items after deleting duplicates are', df.duplicated().sum())
+    print ('number of duplicated items after deleting duplicates are', df.duplicated().sum())
     print('shape of dataframe is', df.shape)
     
     return df
 
 def save_data(df, database_filename):
-    pass  
+    # This function loads the dataframe into a SQLlite Database 
+    
+    engine = create_engine('sqlite:///DisasterReponse_Nitinproject_Udacity.db')
+    df.to_sql('DisasterResponse', engine, index=False)  
 
 
 def main():
