@@ -1,12 +1,20 @@
 import sys
-
+from sklearn.model_selection import train_test_split
+from sqlalchemy import create_engine
+from nltk.tokenize import word_tokenize
+from sklearn.pipeline import Pipeline
 
 def load_data(database_filepath):
-    pass
+    # This function loads the database.db into a dataframe   
+    engine = create_engine('sqlite:///DisasterReponse.db')
+    df = pd.read_sql('DisasterResponse', con= 'sqlite:///DisasterReponse.db')
+    
+    return df
 
 
 def tokenize(text):
-    pass
+    #This function tokenizes the text by words
+    tokenized_text_list = word_tokenize(text, language='english')
 
 
 def build_model():
