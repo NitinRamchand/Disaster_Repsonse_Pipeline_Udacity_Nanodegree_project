@@ -48,7 +48,7 @@ def clean_data(df):
     df.drop(columns='categories', inplace=True)
     
     # Now we merge df with the categories dataframe
-    df = df.merge(categories, how='outer', on='id')
+    df = df.merge(categories, how='inner', on='id')
     
     #We deal with duplicated rows and we delete them
     print ('number of duplicated items before deleting duplicates are', df.duplicated().sum())

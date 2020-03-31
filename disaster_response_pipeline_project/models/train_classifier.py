@@ -1,4 +1,5 @@
 import sys
+import pandas as pd
 from sklearn.model_selection import train_test_split
 from sqlalchemy import create_engine
 from nltk.tokenize import word_tokenize
@@ -7,7 +8,10 @@ from sklearn.multioutput import MultiOutputClassifier
 from nltk.corpus import stopwords
 from nltk.stem import WordNetLemmatizer
 import re
-
+from sklearn.feature_extraction.text import CountVectorizer, TfidfTransformer
+from sklearn.ensemble import RandomForestClassifier
+from time import time
+from sklearn.metrics import precision_recall_fscore_support as score
 
 def load_data(database_filepath):
     # This function loads the database.db into a dataframe   
@@ -16,9 +20,10 @@ def load_data(database_filepath):
     
     # Now the feature X are the messages and the Y targets are all the categories
     # In our case we will build a Multi output classifier
-    X = df['messages']
-    Y = df[4:]
-    category_names = df.columns
+    X = df['message']
+    Y = df.iloc[:,4:]
+    category_names = df.columns[4:]
+    print ('The loaded category names are', category_names)
     
     return X, Y, category_names
 
@@ -37,18 +42,67 @@ def tokenize(text):
                    for w in text_tokenized_no_stop_words]
     
     # We remove all special characters that are not letters in the alphabet or numbers
-    cleaned_tokens = list(filter(lambda x:x, map(lambda x:re.sub(r'[^a-zA-Z0-9]', '', x), lemmed_text)))
+    cleaned_tokens = list(filter(lambda x:
+                                 x, map(lambda x:re.sub(r'[^a-zA-Z0-9]', '', x)
+                                        , lemmed_text)))
     
     return cleaned_tokens
     
 def build_model():
-    pass
+    # This function builds the model in a pipeline  and then the hyper parameters 
+    # defined in parameter grid will then be optimized over Gridsearch. 
+    # Consequently a model will be returned which can then be fitted to the 
+    # train and test splits of the features and labels to evaluate the 
+    # performance of the model.
+    
+    # When building the ML NLP Pipeline as done in standard ways, for feature
+    # extraction we vectoize the tokenized text, then we transform this
+    # before finally applying a multioutput classifier 
+    pipeline = Pipeline([ ('vect', CountVectorizer(tokenizer=tokenize)), 
+                         ('tfidf', TfidfTransformer()), 
+                         ('clf', MultiOutputClassifier(RandomForestClassifier())), ])
+    
+    # We define below the hyperparameters over which we would like to optimise using
+    # GridSearch
+    param_grid = 
+    
+    # Here we use Grid search to optimize over the above mentioned hyperparameters
+    # defined in param_grid
+    grid = GridSearchCV(pipeline, param_grid)
+    
+    return grid
 
 
 def evaluate_model(model, X_test, Y_test, category_names):
-    pass
-
-
+    # We will use the metric precision_recall_fscore_support which is imported as 
+    # score to measure the performance of the model. After trying in the notebook
+    # the algorithm chosen for this project is the Randon Forest Classifier
+    # in order to show the capability of building the pipeline and GridSearch
+    
+    # We first build teh dataframe which will be output as the perfo of the algorithm
+    results = pd.DataFrame(columns= ['category_names', 'precision', 'recall', 'f1-score',
+                                      'support'])
+    
+    # We update the category_names column
+    results['category_names'] = category_names
+    
+    # We predict on the test set what the messages would predict in terms of categories.
+    Y_pred = model.predict(X_test)
+    
+    # Nowe we apply the score method in order to update the results dataframe
+    # We need to go through each column of both the predicted Y and the test Y 
+    # column by column due to the multi ouput character of the target
+    
+    for i in range(len(category_names)):
+        precision, recall, fscore, support = score(Y_test.iloc[:, i],Y_pred[:, i],average='macro')
+        results.loc[i,'precision'] = precision
+        results.loc[i,'recall'] = recall
+        results.loc[i,'f1-score'] = fscore
+        results.loc[i,'support'] = support
+        
+    #For this project we output an array of the mean of the precision, recall and fscore
+    return results[['precision','recall', 'f1-score']].mean()
+    
 def save_model(model, model_filepath):
     pass
 
@@ -64,8 +118,10 @@ def main():
         model = build_model()
         
         print('Training model...')
+        t0 = time()
         model.fit(X_train, Y_train)
-        
+        print ("training time: ", round(time()-t0, 3), "s")
+            
         print('Evaluating model...')
         evaluate_model(model, X_test, Y_test, category_names)
 
