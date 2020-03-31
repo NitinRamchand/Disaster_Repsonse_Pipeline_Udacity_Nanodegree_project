@@ -94,13 +94,16 @@ def evaluate_model(model, X_test, Y_test, category_names):
     # column by column due to the multi ouput character of the target
     
     for i in range(len(category_names)):
-        precision, recall, fscore, support = score(Y_test.iloc[:, i],Y_pred[:, i],average='macro')
+        precision, recall, fscore, support = score(Y_test.iloc[:, i],
+                                                   Y_pred[:, i],average='macro')
         results.loc[i,'precision'] = precision
         results.loc[i,'recall'] = recall
         results.loc[i,'f1-score'] = fscore
         results.loc[i,'support'] = support
         
     #For this project we output an array of the mean of the precision, recall and fscore
+    print ('The scores of the algorithm is', 
+           results[['precision','recall', 'f1-score']].mean())
     return results[['precision','recall', 'f1-score']].mean()
     
 def save_model(model, model_filepath):
