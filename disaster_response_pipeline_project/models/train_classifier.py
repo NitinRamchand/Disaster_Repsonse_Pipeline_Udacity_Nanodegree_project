@@ -14,7 +14,13 @@ def load_data(database_filepath):
     engine = create_engine('sqlite:///DisasterReponse.db')
     df = pd.read_sql('DisasterResponse', con= 'sqlite:///DisasterReponse.db')
     
-    return df
+    # Now the feature X are the messages and the Y targets are all the categories
+    # In our case we will build a Multi output classifier
+    X = df['messages']
+    Y = df[4:]
+    category_names = df.columns
+    
+    return X, Y, category_names
 
 
 def tokenize(text):
