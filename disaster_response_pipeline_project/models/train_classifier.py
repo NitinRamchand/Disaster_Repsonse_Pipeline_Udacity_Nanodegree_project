@@ -64,7 +64,7 @@ def build_model():
     
     # We define below the hyperparameters over which we would like to optimise using
     # GridSearch
-    param_grid = 
+    param_grid = {'clf__estimator__min_samples_split': [2, 3]}
     
     # Here we use Grid search to optimize over the above mentioned hyperparameters
     # defined in param_grid
