@@ -1,6 +1,6 @@
 import sys
 import pandas as pd
-from sklearn.model_selection import train_test_split
+from sklearn.model_selection import train_test_split,  GridSearchCV
 from sqlalchemy import create_engine
 from nltk.tokenize import word_tokenize
 from sklearn.pipeline import Pipeline
@@ -12,6 +12,7 @@ from sklearn.feature_extraction.text import CountVectorizer, TfidfTransformer
 from sklearn.ensemble import RandomForestClassifier
 from time import time
 from sklearn.metrics import precision_recall_fscore_support as score
+from sklearn.externals import joblib
 
 def load_data(database_filepath):
     # This function loads the database.db into a dataframe   
@@ -64,11 +65,17 @@ def build_model():
     
     # We define below the hyperparameters over which we would like to optimise using
     # GridSearch
-    param_grid = {'clf__estimator__min_samples_split': [2, 3]}
+    param_grid = {'n_estimators': [100, 300, 500, 800, 1200],
+                   'max_depth': [5, 8, 15, 25, 30], 
+                   'min_samples_split': [2, 5, 10, 15, 100],
+                   'min_samples_leaf': [1, 2, 5, 10]} 
     
     # Here we use Grid search to optimize over the above mentioned hyperparameters
     # defined in param_grid
-    grid = GridSearchCV(pipeline, param_grid)
+    grid = GridSearchCV(estimator=pipeline, param_grid=param_grid)
+    print('The best hyperparameters calculated by the algorithm are', grid.best_params_)
+    print('The best score calculated by the algorithm are', grid.best_score_)
+    
     
     return grid
 
@@ -104,10 +111,13 @@ def evaluate_model(model, X_test, Y_test, category_names):
     #For this project we output an array of the mean of the precision, recall and fscore
     print ('The scores of the algorithm is', 
            results[['precision','recall', 'f1-score']].mean())
+    
+    
     return results[['precision','recall', 'f1-score']].mean()
     
 def save_model(model, model_filepath):
-    pass
+    
+    joblib.dump(model, model_filepath)
 
 
 def main():
