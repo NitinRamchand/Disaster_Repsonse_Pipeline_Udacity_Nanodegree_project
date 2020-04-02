@@ -7,8 +7,10 @@ from nltk.tokenize import word_tokenize
 
 from flask import Flask
 from flask import render_template, request, jsonify
-from plotly.graph_objs import Bar
-from sklearn.externals import joblib
+from plotly.graph_objects import Bar
+#from plotly.graph_objs import Bar
+import joblib
+#import plotly.graph_objects as go
 from sqlalchemy import create_engine
 
 
@@ -26,11 +28,14 @@ def tokenize(text):
     return clean_tokens
 
 # load data
-engine = create_engine('sqlite:///../data/YourDatabaseName.db')
-df = pd.read_sql_table('YourTableName', engine)
+#engine = create_engine('sqlite:///DisasterReponse.db')
+engine = create_engine('sqlite:///../DisasterResponse.db')
+df = pd.read_sql('DisasterResponse', con= 'sqlite:///../DisasterResponse.db')
+print(df.head())
+#df = pd.read_sql_table('DisasterReponse', engine)
 
 # load model
-model = joblib.load("../models/your_model_name.pkl")
+model = joblib.load("../models/classifier.pkl")
 
 
 # index webpage displays cool visuals and receives user input text for model
@@ -43,6 +48,9 @@ def index():
     genre_counts = df.groupby('genre').count()['message']
     genre_names = list(genre_counts.index)
     
+    # Below is another graph view for the number of messages for each category.
+    category_count_top15 = df.iloc[:,4:].sum().sort_values(ascending=False)[1:15]
+    category_names_top15 = list(category_count_top15.index)
     # create visuals
     # TODO: Below is an example - modify to create your own visuals
     graphs = [
@@ -63,15 +71,37 @@ def index():
                     'title': "Genre"
                 }
             }
+        },
+         {
+            'data': [
+                Bar(
+                    x=category_names_top15,
+                    y=category_count_top15
+                )
+            ],
+
+            'layout': {
+                'title': 'Distribution of Category Top 15',
+                'yaxis': {
+                    'title': "Count"
+                },
+                'xaxis': {
+                    'title': "Category"
+                }
+            }
         }
     ]
     
     # encode plotly graphs in JSON
     ids = ["graph-{}".format(i) for i, _ in enumerate(graphs)]
+    app.logger.info(ids)
+    app.logger.info(graphs)
+
     graphJSON = json.dumps(graphs, cls=plotly.utils.PlotlyJSONEncoder)
     
     # render web page with plotly graphs
     return render_template('master.html', ids=ids, graphJSON=graphJSON)
+
 
 
 # web page that handles user query and displays model results
@@ -83,7 +113,7 @@ def go():
     # use model to predict classification for query
     classification_labels = model.predict([query])[0]
     classification_results = dict(zip(df.columns[4:], classification_labels))
-
+    
     # This will render the go.html Please see that file. 
     return render_template(
         'go.html',

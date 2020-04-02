@@ -16,8 +16,8 @@ from sklearn.externals import joblib
 
 def load_data(database_filepath):
     # This function loads the database.db into a dataframe   
-    engine = create_engine('sqlite:///DisasterReponse.db')
-    df = pd.read_sql('DisasterResponse', con= 'sqlite:///DisasterReponse.db')
+    engine = create_engine('sqlite:///DisasterResponse.db')
+    df = pd.read_sql('DisasterResponse', con= 'sqlite:///DisasterResponse.db')
     
     # Now the feature X are the messages and the Y targets are all the categories
     # In our case we will build a Multi output classifier
