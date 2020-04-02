@@ -65,17 +65,12 @@ def build_model():
     
     # We define below the hyperparameters over which we would like to optimise using
     # GridSearch
-    param_grid = {'n_estimators': [100, 300, 500, 800, 1200],
-                   'max_depth': [5, 8, 15, 25, 30], 
-                   'min_samples_split': [2, 5, 10, 15, 100],
-                   'min_samples_leaf': [1, 2, 5, 10]} 
+    param_grid = {'clf__estimator__min_samples_split': [2, 3]} 
     
     # Here we use Grid search to optimize over the above mentioned hyperparameters
     # defined in param_grid
-    grid = GridSearchCV(estimator=pipeline, param_grid=param_grid)
-    print('The best hyperparameters calculated by the algorithm are', grid.best_params_)
-    print('The best score calculated by the algorithm are', grid.best_score_)
-    
+    grid = GridSearchCV(estimator=pipeline, param_grid=param_grid, cv=5)
+
     
     return grid
 
@@ -134,6 +129,9 @@ def main():
         t0 = time()
         model.fit(X_train, Y_train)
         print ("training time: ", round(time()-t0, 3), "s")
+        print('The best hyperparameters calculated by the algorithm are', model.best_params_)
+        print('The best score calculated by the algorithm are', model.best_score_)
+        
             
         print('Evaluating model...')
         evaluate_model(model, X_test, Y_test, category_names)

@@ -6,7 +6,7 @@ def load_data(messages_filepath, categories_filepath):
     # This functions loads the messages and the categories datasets which are in csv format 
     # into pandas dataframes and the finally returns a merged dataframe on the 'id' column
     messages = pd.read_csv(messages_filepath)
-    categories = pd.read_csv(messages_filepath)
+    categories = pd.read_csv(categories_filepath)
     df = messages.merge(categories, how='outer', on='id')
     
     return df
@@ -16,14 +16,14 @@ def clean_data(df):
     # into a database.
     
     # categories will be a dataframe with all the values expanded of the categories column
-    categories = df['categories'].str.split(';',expand=True)
+    categories = df.categories.str.split(';', expand=True)
     
     # From the expanded Dataframe defined above we will extract the list with all the 
     # column names
     new_catergory_columns = []
     
     # This is just the first row of the dataframe
-    row = categories.iloc[0]
+    row = categories.loc[0]
     
     # Then to extract the column names we take the first part of the string when we split it at the -
     
